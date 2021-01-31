@@ -1,3 +1,6 @@
+
+**Backup of CS144 Labs**
+---
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
 ## Sponge quickstart
