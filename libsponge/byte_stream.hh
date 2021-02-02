@@ -16,8 +16,14 @@ class ByteStream {
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
     // different approaches.
-
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    string _BStream;
+    
+    size_t _capacity;
+    size_t _totalNumWritten;
+    size_t _totalNumPopped;
+    
+    bool _endInput;
+    bool _error;  //!< Flag indicating that the stream suffered an error.
 
   public:
     //! Construct a stream with room for `capacity` bytes.
