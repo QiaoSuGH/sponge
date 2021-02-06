@@ -10,7 +10,6 @@ ByteStream::ByteStream(const size_t capacity):
     _inputEnded(0),
     _error(0){}
 
-
 size_t ByteStream::write(const string &data) {
     if(_inputEnded == true){return 0;}
 
