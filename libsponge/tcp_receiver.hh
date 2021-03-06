@@ -64,7 +64,7 @@ class TCPReceiver {
 
     private:
     WrappingInt32 _ISN_peer;
-    uint64_t _checkpoint = 0;
+    uint64_t _checkpoint = 1;
     bool _has_syn = false;
     bool _has_fin = false;
 };
