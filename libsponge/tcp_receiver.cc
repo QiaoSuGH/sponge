@@ -61,7 +61,7 @@ optional<WrappingInt32> TCPReceiver::ackno() const {
         return wrap(_reassembler.stream_out().bytes_written()  + tmp, _ISN_peer);
     }
     else return std::nullopt;*/
-     if (!_has_syn) return {};
+    if (!_has_syn) return {};
     if (_reassembler.stream_out().input_ended()) { // 如果Reassembler已经组装完毕，返回fin之后的那个序号
         return WrappingInt32(wrap(_reassembler.stream_out().bytes_written() + 1, _ISN_peer)) + 1;
     }
@@ -71,6 +71,5 @@ optional<WrappingInt32> TCPReceiver::ackno() const {
 
 
 size_t TCPReceiver::window_size() const {
-    //return _capacity - stream_out().buffer_size(); 
-    return _reassembler.stream_out().bytes_read() + _capacity - _reassembler.stream_out().bytes_written();
+    return _capacity - stream_out().buffer_size(); 
 }
