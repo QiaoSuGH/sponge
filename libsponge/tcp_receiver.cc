@@ -9,7 +9,6 @@
 using namespace std;
 
 void TCPReceiver::segment_received(const TCPSegment &seg) {
-    //if(_has_fin)return;
 
     const TCPHeader header = seg.header();
     if(header.syn){
@@ -48,7 +47,6 @@ optional<WrappingInt32> TCPReceiver::ackno() const {
     }
     else return std::nullopt;
 }
-
 
 size_t TCPReceiver::window_size() const {
     return _capacity - stream_out().buffer_size(); 
