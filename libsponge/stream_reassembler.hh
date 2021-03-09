@@ -7,6 +7,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -61,7 +62,11 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
-    size_t left_window() const {return _first_unread + _output.buffer_size();}
+    size_t left_window() const {
+      std::cout<<"test _first_unread: "<<std::endl;
+      std::cout << _first_unread<<" "<<_output.buffer_size()<<std::endl;
+      
+    return _first_unread + _output.buffer_size();}
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH

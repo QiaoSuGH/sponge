@@ -99,7 +99,9 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     }
     
     if(eof)_eof = true;
-    if(_eof && empty())_output.end_input();
+    if(_eof && empty()){
+        _output.end_input();
+    }
 }
 
 size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes; }
