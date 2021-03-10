@@ -26,6 +26,8 @@ class TCPSender {
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
+    unsigned int _current_retransmission_timeout;
+
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
@@ -37,8 +39,8 @@ class TCPSender {
     bool _SYN_sent{false};
     bool _FIN_sent{false};
     std::queue<TCPSegment> _outstanding_segs = {};
-    uint64_t _sender_window_size{1};
-    uint64_t _receiver_window_size{0};//should be 0?
+    uint16_t _sender_window_size{1};
+    uint16_t _receiver_window_size{0};//should be 0?
     WrappingInt32 _ackno{0};
 
     //member for the timer
@@ -46,7 +48,7 @@ class TCPSender {
     size_t _ms_accumulated{0};
 
     unsigned int _consecutive_retransmission{0};
-
+    size_t _previous_ackno{0};//compare between current ackno and _previous_ackno
 
   public:
     //! Initialize a TCPSender
