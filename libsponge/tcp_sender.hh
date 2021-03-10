@@ -35,9 +35,17 @@ class TCPSender {
   private:
     uint64_t _bytes_in_flight{0};
     bool _SYN_sent{false};
+    bool _FIN_sent{false};
     std::queue<TCPSegment> _outstanding_segs = {};
-    uint64_t _window_size{1};
+    uint64_t _sender_window_size{1};
+    uint64_t _receiver_window_size{0};//should be 0?
     WrappingInt32 _ackno{0};
+
+    //member for the timer
+    bool _timer_is_running{false};
+    size_t _ms_accumulated{0};
+
+    unsigned int _consecutive_retransmission{0};
 
 
   public:
