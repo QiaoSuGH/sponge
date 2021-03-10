@@ -40,7 +40,7 @@ class TCPSender {
     bool _FIN_sent{false};
     std::queue<TCPSegment> _outstanding_segs = {};
     uint16_t _sender_window_size{1};
-    uint16_t _receiver_window_size{0};//should be 0?
+    uint16_t _receiver_window_size{1};//should be 0?
     WrappingInt32 _ackno{0};
 
     //member for the timer
