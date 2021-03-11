@@ -122,7 +122,7 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     }
 
     _receiver_window_size = window_size;
-    _sender_window_size = window_size;
+    _sender_window_size = window_size + abs_ackno - _next_seqno;
     if(window_size == 0)_sender_window_size = 1;
     fill_window();
 
