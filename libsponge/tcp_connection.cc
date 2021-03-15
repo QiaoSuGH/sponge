@@ -24,9 +24,32 @@ void TCPConnection::segment_received(const TCPSegment &seg) { DUMMY_CODE(seg); }
 
 bool TCPConnection::active() const { return {}; }
 
+void TCPConnection::send_segs_in_sender(){
+    TCPSegment seg;
+    while(_sender.segments_out().size())
+    {
+        seg = _sender.segments_out().front();
+        _sender.segments_out().pop();
+        if (_receiver.ackno().has_value()) {
+            seg.header().ack = true;
+            seg.header().ackno = _receiver.ackno().value();
+            seg.header().win = _receiver.window_size();
+        }
+        _segments_out.push(seg);
+    }
+    
+}
+
+
 size_t TCPConnection::write(const string &data) {
-    DUMMY_CODE(data);
-    return {};
+    if(data.size() == 0)return 0;
+
+    size_t num_written_bytes = _sender.stream_in().write(data);
+    _sender.fill_window();
+
+    send_segs_in_sender();
+    return num_written_bytes;
+
 }
 
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
