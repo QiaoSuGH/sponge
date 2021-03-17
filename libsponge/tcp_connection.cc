@@ -55,6 +55,7 @@ void TCPConnection::unclean_shutdown(){
 
 
 void TCPConnection::segment_received(const TCPSegment &seg) { 
+    /*
     if(!_active)return;
     if(seg.header().rst){
         unclean_shutdown();
@@ -62,25 +63,26 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     }
 
     _time_since_last_seg_received = 0;
-
+    
     //according to diff state to process
-    //get first SYN
+    //the sender is closed and the receiver is listening
     if(_receiver.ackno().has_value() == false && _sender.next_seqno_absolute() == 0){
         //haven't got a SYN
         if(seg.header().syn == false)return;
         _receiver.segment_received(seg);
-        connect();
+        connect();//SYN sent
         return;
     }
 
-    //SYN sent
+    //SYN sent and has't recv a SYN
     if(_sender.next_seqno_absolute() > 0 && _receiver.ackno().has_value() == false &&
        _sender.bytes_in_flight() == _sender.next_seqno_absolute())
     {
         //try to establish connection with endpoints
         if(seg.payload().size() > 0)return;//SYN should not carry data
-        if(seg.header().ack == false){
-            //possible when trying to establish conn at the same time
+        */
+        /*if(seg.header().ack == false){
+            //possible when the endpoints try to establish conn at the same time
             if(seg.header().syn){
                 _receiver.segment_received(seg);
                 _sender.send_empty_segment();//
@@ -89,14 +91,74 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
         else{
             _receiver.segment_received(seg);
             _sender.ack_received(seg.header().ackno, seg.header().win);
+        }*/
+        //expect a SYN may be without a ack
+    /*
+        if(seg.header().syn == false)return;
+        if(seg.header().ack){
+            _receiver.segment_received(seg);
+            _sender.ack_received(seg.header().ackno, seg.header().win);
+        }
+        else{
+            _receiver.segment_received(seg);
+            _sender.send_empty_segment();//ack for SYN
         }
         return ;
     }
 
-    //established
-     _receiver.segment_received(seg);
-    _sender.ack_received(seg.header().ackno, seg.header().win);
+    //SYN acked
+    //if()
 
+    //established
+    _receiver.segment_received(seg);
+    _sender.ack_received(seg.header().ackno, seg.header().win);
+    if (_sender.stream_in().buffer_empty() && seg.length_in_sequence_space())
+        _sender.send_empty_segment();
+
+    send_segs_in_sender();
+    */
+   if (!_active)
+        return;
+    _time_since_last_seg_received = 0;
+    // State: closed
+    if (!_receiver.ackno().has_value() && _sender.next_seqno_absolute() == 0) {
+        if (!seg.header().syn)
+            return;
+        _receiver.segment_received(seg);
+        connect();
+        return;
+    }
+    // State: syn sent
+    if (_sender.next_seqno_absolute() > 0 && _sender.bytes_in_flight() == _sender.next_seqno_absolute() &&
+        !_receiver.ackno().has_value()) {
+        if (seg.payload().size())
+            return;
+        if (!seg.header().ack) {
+            if (seg.header().syn) {
+                // simultaneous open
+                _receiver.segment_received(seg);
+                _sender.send_empty_segment();
+            }
+            return;
+        }
+        if (seg.header().rst) {
+            _receiver.stream_out().set_error();
+            _sender.stream_in().set_error();
+            _active = false;
+            return;
+        }
+    }
+    _receiver.segment_received(seg);
+    _sender.ack_received(seg.header().ackno, seg.header().win);
+    // Lab3 behavior: fill_window() will directly return without sending any segment.
+    // See tcp_sender.cc line 42
+    if (_sender.stream_in().buffer_empty() && seg.length_in_sequence_space())
+        _sender.send_empty_segment();
+    if (seg.header().rst) {
+        _sender.send_empty_segment();
+        unclean_shutdown();
+        return;
+    }
     send_segs_in_sender();
 }
 
@@ -155,7 +217,7 @@ TCPConnection::~TCPConnection() {
     try {
         if (active()) {
             cerr << "Warning: Unclean shutdown of TCPConnection\n";
-
+            unclean_shutdown();
             // Your code here: need to send a RST segment to the peer
         }
     } catch (const exception &e) {
