@@ -114,6 +114,7 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
     if(_new_seg_acked){
         _timer_is_running = true;
+        //_current_retransmission_timeout = _initial_retransmission_timeout;
         _ms_accumulated = 0;
     }
     if(_outstanding_segs.size() == 0){
