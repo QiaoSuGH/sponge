@@ -9,7 +9,6 @@
 using namespace std;
 
 void TCPReceiver::segment_received(const TCPSegment &seg) {
-    /*
     const TCPHeader header = seg.header();
     if(header.syn){
         if(_has_syn)return;
@@ -34,20 +33,6 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         _checkpoint = _reassembler.stream_out().bytes_written() + 1;
     }
     if(header.fin && _reassembler.unassembled_bytes() == 0)_reassembler.stream_out().end_input();
-    */
-   TCPHeader header = seg.header();
-    if (header.syn && _has_syn)
-        return;
-    if (header.syn) {
-        _has_syn = true;
-        _ISN_peer = header.seqno;
-    }
-    // note that fin flag seg can carry payload
-    if (_has_syn && header.fin)
-        _has_fin = true;
-    size_t absolute_seqno = unwrap(header.seqno, WrappingInt32(_ISN_peer), _checkpoint);
-    _reassembler.push_substring(seg.payload().copy(), header.syn ? 0 : absolute_seqno - 1, header.fin);
-    _checkpoint = absolute_seqno;
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const {

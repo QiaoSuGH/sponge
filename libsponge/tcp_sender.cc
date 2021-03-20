@@ -66,6 +66,7 @@ void TCPSender::fill_window() {
 
     //normal case : send seg with payload
     //_sender_window_size = _receiver_window_size;
+    bool _has_seg_sent = false;
     while(!_stream.buffer_empty() && _sender_window_size > 0){
         //the max length of next seg
         size_t _bytes_length = TCPConfig::MAX_PAYLOAD_SIZE;
@@ -87,8 +88,9 @@ void TCPSender::fill_window() {
         _bytes_in_flight += seg.length_in_sequence_space();
         _outstanding_segs.push(seg);
         _segments_out.push(seg);
+        _has_seg_sent = true;
     }
-    if(!_timer_is_running){
+    if(_has_seg_sent && !_timer_is_running){
         _timer_is_running = true;
         _ms_accumulated = 0;
     }
@@ -114,9 +116,11 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 
     if(_new_seg_acked){
         _timer_is_running = true;
-        //_current_retransmission_timeout = _initial_retransmission_timeout;
         _ms_accumulated = 0;
+        _current_retransmission_timeout = _initial_retransmission_timeout;
+        _consecutive_retransmission = 0;
     }
+
     if(_outstanding_segs.size() == 0){
         _timer_is_running = false;
         _ms_accumulated = 0;
@@ -126,10 +130,6 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     _sender_window_size = window_size + abs_ackno - _next_seqno;
     if(window_size == 0)_sender_window_size = 1;
     fill_window();
-
-    _current_retransmission_timeout = _initial_retransmission_timeout;
-    _consecutive_retransmission = 0;
-
     return;
 }
 
