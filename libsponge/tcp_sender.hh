@@ -26,7 +26,7 @@ class TCPSender {
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
-    unsigned int _current_retransmission_timeout;
+    //unsigned int _current_retransmission_timeout;
 
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
@@ -35,6 +35,21 @@ class TCPSender {
     uint64_t _next_seqno{0};
 
   private:
+    size_t _previous_ackno{0};
+    bool _syn_sent = false;
+    bool _fin_sent = false;
+    uint64_t _bytes_in_flight = 0;
+    uint16_t _receiver_window_size = 0;
+    uint16_t _receiver_free_space = 0;
+    uint16_t _consecutive_retransmissions = 0;
+    unsigned int _rto = 0;
+    unsigned int _time_elapsed = 0;
+    bool _timer_running = false;
+    std::queue<TCPSegment> _segments_outstanding{};
+
+    bool _ack_valid(uint64_t abs_ackno);
+    void send_segment(TCPSegment &seg);
+    /*
     uint64_t _bytes_in_flight{0};
     bool _SYN_sent{false};
     bool _FIN_sent{false};
@@ -49,7 +64,7 @@ class TCPSender {
 
     unsigned int _consecutive_retransmission{0};
     size_t _previous_ackno{0};//compare between current ackno and _previous_ackno
-
+    */
   public:
     //! Initialize a TCPSender
     TCPSender(const size_t capacity = TCPConfig::DEFAULT_CAPACITY,
